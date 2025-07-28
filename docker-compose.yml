@@ -23,6 +23,12 @@ services:
   n8n:
     image: docker.n8n.io/n8nio/n8n
     restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5678/healthz"]
+      interval: 60s
+      timeout: 15s
+      retries: 2
+      start_period: 60s
     ports:
       - "127.0.0.1:5678:5678"
     labels:
@@ -47,6 +53,21 @@ services:
       - NODE_ENV=production
       - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - N8N_METRICS=false
+      - N8N_LOG_LEVEL=error
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_USER_MANAGEMENT_DISABLED=false
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+          cpus: '0.8'
+        reservations:
+          memory: 256M
+          cpus: '0.3'
     volumes:
       - n8n_data:/home/node/.n8n
       - ./local-files:/files
