@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: "traefik"
+    image: traefik:latest
     restart: always
     command:
       - "--api.insecure=true"
