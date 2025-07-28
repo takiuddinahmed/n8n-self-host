@@ -14,7 +14,7 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
 
-      - "--log.level=INFO"
+      - "--log.level=DEBUG"
     ports:
       - "80:80"
       - "443:443"
