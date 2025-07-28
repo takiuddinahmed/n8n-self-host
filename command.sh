@@ -57,7 +57,7 @@ fi
 
 # Start services
 echo "🚀 Starting n8n services..."
-docker compose up -d
+sudo docker compose up -d
 
 echo "✅ Setup complete!"
 echo "📝 Next steps:"
