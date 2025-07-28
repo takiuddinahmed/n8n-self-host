@@ -1,24 +1,29 @@
 services:
   traefik:
-    image: traefik:latest
+    image: traefik:v2.10
     restart: always
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
-      - "--certificatesresolvers.mytlschallenge.acme.email=${SSL_EMAIL}"
-      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${SSL_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--log.level=INFO"
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - traefik_data:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN_NAME}`)
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.entrypoints=websecure
+      - traefik.http.routers.traefik.tls.certresolver=letsencrypt
 
   n8n:
     image: docker.n8n.io/n8nio/n8n
@@ -36,16 +41,16 @@ services:
       - traefik.http.routers.n8n.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`)
       - traefik.http.routers.n8n.tls=true
       - traefik.http.routers.n8n.entrypoints=web,websecure
-      - traefik.http.routers.n8n.tls.certresolver=mytlschallenge
-      - traefik.http.middlewares.n8n.headers.SSLRedirect=true
-      - traefik.http.middlewares.n8n.headers.STSSeconds=315360000
-      - traefik.http.middlewares.n8n.headers.browserXSSFilter=true
-      - traefik.http.middlewares.n8n.headers.contentTypeNosniff=true
-      - traefik.http.middlewares.n8n.headers.forceSTSHeader=true
-      - traefik.http.middlewares.n8n.headers.SSLHost=${DOMAIN_NAME}
-      - traefik.http.middlewares.n8n.headers.STSIncludeSubdomains=true
-      - traefik.http.middlewares.n8n.headers.STSPreload=true
-      - traefik.http.routers.n8n.middlewares=n8n@docker
+      - traefik.http.routers.n8n.tls.certresolver=letsencrypt
+      - traefik.http.middlewares.n8n-headers.headers.SSLRedirect=true
+      - traefik.http.middlewares.n8n-headers.headers.STSSeconds=315360000
+      - traefik.http.middlewares.n8n-headers.headers.browserXSSFilter=true
+      - traefik.http.middlewares.n8n-headers.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.n8n-headers.headers.forceSTSHeader=true
+      - traefik.http.middlewares.n8n-headers.headers.SSLHost=${DOMAIN_NAME}
+      - traefik.http.middlewares.n8n-headers.headers.STSIncludeSubdomains=true
+      - traefik.http.middlewares.n8n-headers.headers.STSPreload=true
+      - traefik.http.routers.n8n.middlewares=n8n-headers@docker
     environment:
       - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
       - N8N_PORT=5678
@@ -54,7 +59,7 @@ services:
       - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
       - N8N_METRICS=false
-      - N8N_LOG_LEVEL=error
+      - N8N_LOG_LEVEL=info
       - N8N_DIAGNOSTICS_ENABLED=false
       - N8N_USER_MANAGEMENT_DISABLED=false
       - N8N_BASIC_AUTH_ACTIVE=true
