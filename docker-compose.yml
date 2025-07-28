@@ -18,12 +18,6 @@ services:
     volumes:
       - traefik_data:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN_NAME}`)
-      - traefik.http.routers.traefik.service=api@internal
-      - traefik.http.routers.traefik.entrypoints=websecure
-      - traefik.http.routers.traefik.tls.certresolver=letsencrypt
 
   n8n:
     image: docker.n8n.io/n8nio/n8n
@@ -47,7 +41,7 @@ services:
       - traefik.http.middlewares.n8n-headers.headers.browserXSSFilter=true
       - traefik.http.middlewares.n8n-headers.headers.contentTypeNosniff=true
       - traefik.http.middlewares.n8n-headers.headers.forceSTSHeader=true
-      - traefik.http.middlewares.n8n-headers.headers.SSLHost=${DOMAIN_NAME}
+      - traefik.http.middlewares.n8n-headers.headers.SSLHost=${SUBDOMAIN}.${DOMAIN_NAME}
       - traefik.http.middlewares.n8n-headers.headers.STSIncludeSubdomains=true
       - traefik.http.middlewares.n8n-headers.headers.STSPreload=true
       - traefik.http.routers.n8n.middlewares=n8n-headers@docker
