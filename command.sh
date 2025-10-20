@@ -50,9 +50,9 @@ mkdir -p local-files
 # Check if .env file exists
 if [ ! -f .env ]; then
     echo "⚠️  Warning: .env file not found!"
-    echo "Please create a .env file with your configuration before running docker compose"
-    echo "See README.md for details"
-    exit 1
+    echo "📄 Creating from .env.example..."
+    cp .env.example .env
+    echo "✅ Created .env file successfully!"
 fi
 
 # Start services
