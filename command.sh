@@ -6,10 +6,10 @@ set -e
 echo "🚀 Starting n8n self-hosting setup..."
 
 # Check if running as root
-if [ "$EUID" -eq 0 ]; then
-    echo "❌ Please don't run this script as root"
-    exit 1
-fi
+# if [ "$EUID" -eq 0 ]; then
+#     echo "❌ Please don't run this script as root"
+#     exit 1
+# fi
 
 # Remove incompatible or out of date Docker implementations if they exist
 echo "🧹 Removing old Docker packages..."
